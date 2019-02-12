@@ -65,7 +65,7 @@ public class TwoSectionActivity extends AppCompatActivity implements View.OnClic
                 check();
                 break;
             case R.id.negation_btn:
-                matProcess();
+                negationBm(bmp);
                 break;
         }
     }
@@ -77,12 +77,12 @@ public class TwoSectionActivity extends AppCompatActivity implements View.OnClic
             ActivityCompat.requestPermissions(TwoSectionActivity.this,
                     new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},1);
         }else {
-            matProcess();
+            negationBm(bmp);
         }
     }
 
     private void negationBm(Bitmap bm){
-        bm = bm.copy(Bitmap.Config.ARGB_8888, true);;
+        bm = bm.copy(Bitmap.Config.ARGB_8888, true);
         int width = bm.getWidth();
         int height = bm.getHeight();
         Bitmap.Config config = bm.getConfig();
@@ -200,7 +200,7 @@ public class TwoSectionActivity extends AppCompatActivity implements View.OnClic
         switch (requestCode){
             case 1:
                 if (grantResults.length>0&&grantResults[0]==PackageManager.PERMISSION_GRANTED){
-                    matProcess();
+                    negationBm(bmp);
                 }else {
                     Log.d(TAG,"failed to save...");
                 }
