@@ -18,9 +18,14 @@ import android.widget.Button;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfDouble;
+import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ThreeSectionActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -119,6 +124,11 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         if (mat.empty()){
             return;
         }
+        Utils.matToBitmap(binaryMat(mat),bm);
+    }
+
+    //“逐个”像素点取出并处理后放回
+    private Mat everyPoint(Mat mat){
         int channels = mat.channels();
         int width = mat.width();
         int height = mat.height();
@@ -126,12 +136,12 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         int b = 0, g = 0, r = 0;
         for (int row = 0 ;row < height; row++){
             for (int col = 0;col < width; col++){
-             //读取
-             mat.get(row,col,data);
-             b = data[0]&0xff;
-             g = data[1]&0xff;
-             r = data[2]&0xff;
-             //修改
+                //读取
+                mat.get(row,col,data);
+                b = data[0]&0xff;
+                g = data[1]&0xff;
+                r = data[2]&0xff;
+                //修改
                 b = 255 - b;
                 g = 255 - g;
                 r = 255 - r;
@@ -142,6 +152,100 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
                 mat.put(row,col,data);
             }
         }
-        Utils.matToBitmap(mat,bm);
+        return mat;
+    }
+
+    //“逐排”像素点取出并处理后放回
+    private Mat everyRow(Mat mat){
+        int channels = mat.channels();
+        int width = mat.width();
+        int height = mat.height();
+        byte[] data = new byte[channels*width];
+        int pv = 0;
+        for (int row = 0; row < height; row++){
+            mat.get(row,0,data);
+            for (int col = 0; col < data.length; col++){
+                //读取
+                pv = data[col]&0xff;
+                //修改
+                pv = 254 - pv;
+                data[col] = (byte)pv;
+            }
+            //写入
+            mat.put(row,0,data);
+        }
+        return mat;
+    }
+
+    //“整个”像素点取出并处理后放回
+    private Mat everyMat(Mat mat){
+        int channels = mat.channels();
+        int width = mat.width();
+        int height = mat.height();
+        int pv = 0;
+        byte[] data = new byte[channels*width*height];
+        mat.get(0,0,data);
+        for (int i = 0; i < data.length; i++){
+            pv = data[i]&0xff;
+            pv = 254-pv;
+            data[i] = (byte)pv;
+        }
+        mat.put(0,0,data);
+        return mat;
+    }
+
+    //“分图层”取出像素点处理后放回
+    private Mat splitAndMerge(Mat mat){
+        List<Mat> mv = new ArrayList<>();
+        Core.split(mat,mv);
+        for (Mat m:mv){
+            int pv = 0;
+            int channels = m.channels();
+            int width = m.width();
+            int height = m.height();
+            byte[] data = new byte[channels*width*height];
+            m.get(0,0,data);
+            for (int i = 0; i < data.length; i++){
+                pv = data[i]&0xff;
+                pv = 254-pv;
+                data[i]=(byte)pv;
+            }
+            m.put(0,0,data);
+        }
+        Core.merge(mv,mat);
+        return mat;
+    }
+
+    private Mat binaryMat(Mat mat){
+        //转为灰度图像
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+        //计算均值和标准方差
+        MatOfDouble means = new MatOfDouble();
+        MatOfDouble stddevs =  new MatOfDouble();
+        Core.meanStdDev(gray,means,stddevs);
+        //显示均值与标准方差
+        double[] mean = means.toArray();
+        double[] stddev = stddevs.toArray();
+        Log.i(TAG,"gray image means : " + mean[0]);
+        Log.i(TAG,"gray image stddev : " + stddev[0]);
+        //读取像素数组
+        int width = gray.width();
+        int height = gray.height();
+        byte[] data = new byte[width*height];
+        gray.get(0,0,data);
+        int pv = 0;
+        //根据均值进行二值分割
+        int t = (int)mean[0];
+        for(int i = 0; i < data.length; i++){
+            pv = data[i]&0xff;
+            if (pv>t){
+                data[i]= (byte)255;
+            }else {
+                data[i]=(byte)0;
+            }
+        }
+        gray.put(0,0,data);
+        return gray;
     }
 }
