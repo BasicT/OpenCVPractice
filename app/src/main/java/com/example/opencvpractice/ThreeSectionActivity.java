@@ -17,6 +17,9 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Mat;
+
 import java.io.File;
 
 public class ThreeSectionActivity extends AppCompatActivity implements View.OnClickListener {
@@ -26,11 +29,14 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
     private Uri uri;
     Button selectBtn;
     Button processBtn;
+    Bitmap bm;
+    Mat mat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_three_section);
+        mat = new Mat();
         selectBtn = (Button)findViewById(R.id.select_image_btn);
         selectBtn.setOnClickListener(this);
         processBtn = (Button)findViewById(R.id.process_btn);
@@ -44,6 +50,7 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
                 pickUpImage();
                 break;
             case R.id.process_btn:
+                negationBitmap(bm);
                 break;
         }
     }
@@ -102,8 +109,39 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
             e.printStackTrace();
             Log.d(TAG,"错误类型为： "+ e);
         }
-        Bitmap bm = ImageSelectUtils.getSuitableBitmap(fileUri.getPath());
+        bm = ImageSelectUtils.getSuitableBitmap(fileUri.getPath());
         ImageView iv = (ImageView)findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
+    }
+
+    private void negationBitmap(Bitmap bm){
+        Utils.bitmapToMat(bm,mat);
+        if (mat.empty()){
+            return;
+        }
+        int channels = mat.channels();
+        int width = mat.width();
+        int height = mat.height();
+        byte[] data = new byte[channels];
+        int b = 0, g = 0, r = 0;
+        for (int row = 0 ;row < height; row++){
+            for (int col = 0;col < width; col++){
+             //读取
+             mat.get(row,col,data);
+             b = data[0]&0xff;
+             g = data[1]&0xff;
+             r = data[2]&0xff;
+             //修改
+                b = 255 - b;
+                g = 255 - g;
+                r = 255 - r;
+                //写入
+                data[0] = (byte)b;
+                data[1] = (byte)g;
+                data[2] = (byte)r;
+                mat.put(row,col,data);
+            }
+        }
+        Utils.matToBitmap(mat,bm);
     }
 }
