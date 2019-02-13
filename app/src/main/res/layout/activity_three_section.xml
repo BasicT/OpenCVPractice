@@ -16,6 +16,18 @@
         android:id="@+id/process_btn"
         android:text="处理图像"
         android:layout_toRightOf="@id/select_image_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/logic_btn"
+        android:text="逻辑运算"
+        android:layout_toRightOf="@id/process_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/gaussian_btn"
+        android:text="高斯图像"
+        android:layout_toRightOf="@id/logic_btn"/>
 
     <ImageView
         android:layout_width="match_parent"

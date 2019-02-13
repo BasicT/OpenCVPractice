@@ -19,15 +19,18 @@ import android.widget.ImageView;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class ThreeSectionActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -36,6 +39,8 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
     private Uri uri;
     Button selectBtn;
     Button processBtn;
+    Button logicBtn;
+    Button gaussianBtn;
     Bitmap bm;
     Mat mat;
 
@@ -48,6 +53,10 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         selectBtn.setOnClickListener(this);
         processBtn = (Button)findViewById(R.id.process_btn);
         processBtn.setOnClickListener(this);
+        logicBtn = findViewById(R.id.logic_btn);
+        logicBtn.setOnClickListener(this);
+        gaussianBtn = findViewById(R.id.gaussian_btn);
+        gaussianBtn.setOnClickListener(this);
     }
 
     @Override
@@ -58,6 +67,12 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
                 break;
             case R.id.process_btn:
                 negationBitmap(bm);
+                break;
+            case R.id.logic_btn:
+                logicMath();
+                break;
+            case R.id.gaussian_btn:
+                gaussian();
                 break;
         }
     }
@@ -284,5 +299,80 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         int gamma = 30;
         Core.addWeighted(mat,alpha,black,1.0-alpha,gamma,dst);
         return dst;
+    }
+
+    //逻辑运算演示
+    private void logicMath(){
+        Mat src1 = Mat.zeros(400,400,CvType.CV_8UC3);
+        Mat src2 = new Mat(400,400,CvType.CV_8UC3);
+        src2.setTo(new Scalar(255,255,255));
+
+        Rect rect = new Rect();
+        rect.x = 100;
+        rect.y = 100;
+        rect.width = 200;
+        rect.height = 200;
+
+        Imgproc.rectangle(src1,rect.tl(),rect.br(),new Scalar(0,255,0),-1);
+        rect.x = 10;
+        rect.y = 10;
+        Imgproc.rectangle(src2,rect.tl(),rect.br(),new Scalar(255,255,0),-1);
+
+        Mat dst1 = new Mat();
+        Mat dst2 = new Mat();
+        Mat dst3 = new Mat();
+        Core.bitwise_and(src1,src2,dst1);
+        Core.bitwise_or(src1,src2,dst2);
+        Core.bitwise_xor(src1,src2,dst3);
+
+        Mat dst = Mat.zeros(800,1200,CvType.CV_8UC3);
+        rect.x = 0;
+        rect.y = 0;
+        rect.width = 400;
+        rect.height = 400;
+        dst1.copyTo(dst.submat(rect));
+        rect.x = 400;
+        dst2.copyTo(dst.submat(rect));
+        rect.x = 800;
+        dst3.copyTo(dst.submat(rect));
+        rect.x = 0;
+        rect.y = 400;
+        src2.copyTo(dst.submat(rect));
+        rect.x = 400;
+        src1.copyTo(dst.submat(rect));
+
+
+        dst1.release();
+        dst2.release();
+        dst3.release();
+
+        Bitmap bm1 = Bitmap.createBitmap(dst.cols(),dst.rows(),Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm1);
+        ImageView iv = (ImageView)findViewById(R.id.select_image);
+        iv.setImageBitmap(bm1);
+    }
+
+    //归一化演示创建高斯噪声图像
+    private void gaussian(){
+        Mat src = Mat.zeros(400,400,CvType.CV_32FC3);
+        float[] data = new float[400*400*3];
+        Random random = new Random();
+        for (int i = 0; i < data.length; i++){
+            data[i] = (float)random.nextGaussian();
+        }
+        src.put(0,0,data);
+
+        Mat dst = new Mat();
+        Core.normalize(src,dst,0,255,Core.NORM_MINMAX,-1,new Mat());
+
+        Mat dst8u = new Mat();
+        dst.convertTo(dst8u,CvType.CV_8UC3);
+
+        Bitmap bm1 = Bitmap.createBitmap(dst.cols(),dst.rows(),Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(dst8u,bm1);
+        ImageView iv = (ImageView)findViewById(R.id.select_image);
+        iv.setImageBitmap(bm1);
     }
 }
