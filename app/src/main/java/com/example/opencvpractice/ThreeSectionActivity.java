@@ -21,6 +21,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfDouble;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
@@ -124,7 +126,7 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         if (mat.empty()){
             return;
         }
-        Utils.matToBitmap(binaryMat(mat),bm);
+        Utils.matToBitmap(superPosition(mat),bm);
     }
 
     //“逐个”像素点取出并处理后放回
@@ -216,6 +218,7 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         return mat;
     }
 
+    //转灰度图像后二值转换
     private Mat binaryMat(Mat mat){
         //转为灰度图像
         Mat gray = new Mat();
@@ -247,5 +250,39 @@ public class ThreeSectionActivity extends AppCompatActivity implements View.OnCl
         }
         gray.put(0,0,data);
         return gray;
+    }
+
+    //测试四则运算
+    private Mat math(Mat mat){
+        Mat moon = Mat.zeros(mat.rows(),mat.cols(),mat.type());
+        int cx = mat.cols() - 60;
+        int cy = 60;
+        Imgproc.circle(moon,new Point(cx,cy),50,new Scalar(95,95,234),-1,8,0);
+
+        Mat dst = new Mat();
+        Core.add(mat,moon,dst);
+        return dst;
+    }
+
+    //测试调整亮度和对比度
+    private Mat lighter(Mat mat){
+        //加法调整亮度取值范围0-255
+        Mat dst1 = new Mat();
+        Core.add(mat,new Scalar(0,0,0),dst1);
+        //乘法调整对比度取值范围0-3，小于1降低，大于1升高
+        Mat dst2 = new Mat();
+        Core.multiply(dst1,new Scalar(3,3,3),dst2);
+
+        return dst2;
+    }
+
+    //基于权重的图像叠加
+    private Mat superPosition(Mat mat){
+        Mat black = Mat.zeros(mat.size(),mat.type());
+        Mat dst = new Mat();
+        double alpha = 1.5;
+        int gamma = 30;
+        Core.addWeighted(mat,alpha,black,1.0-alpha,gamma,dst);
+        return dst;
     }
 }
