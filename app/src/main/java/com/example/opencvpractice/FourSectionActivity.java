@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.ContactsContract;
 import android.support.annotation.GuardedBy;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -17,10 +18,12 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageView;
 
 import org.opencv.android.Utils;
 import org.opencv.core.Core;
+import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Size;
@@ -36,7 +39,9 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
     private Uri uri;
     Bitmap bitmap;
     Button takePicBtn,blurBtn,gaussianBlurBtn,medianBlurBtn,dilateBtn,erodeBtn
-            ,restoreBtn,bilateralFilterBtn,pyrMeanShiftFilteringBtn;
+            ,restoreBtn,bilateralFilterBtn,pyrMeanShiftFilteringBtn,customFilterBtn
+            ,morphBtn;
+    EditText morphNum;
 
 
     @Override
@@ -61,6 +66,11 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
         bilateralFilterBtn.setOnClickListener(this);
         pyrMeanShiftFilteringBtn = findViewById(R.id.pyrMeanShiftFiltering_btn);
         pyrMeanShiftFilteringBtn.setOnClickListener(this);
+        customFilterBtn = findViewById(R.id.customFilter_btn);
+        customFilterBtn.setOnClickListener(this);
+        morphBtn = findViewById(R.id.morph_btn);
+        morphBtn.setOnClickListener(this);
+        morphNum = findViewById(R.id.morph_num);
     }
 
     @Override
@@ -93,7 +103,15 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
             case R.id.pyrMeanShiftFiltering_btn:
                 pyrMeanShiftFiltering();
                 break;
+            case R.id.customFilter_btn:
+                customFilter();
+                break;
+            case R.id.morph_btn:
+                int num = Integer.parseInt(morphNum.getText().toString());
+                morphologyDemo(num);
         }
+
+
     }
 
     private void pickUpImage(){
@@ -290,6 +308,85 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
 
         Mat dst = new Mat();
         Imgproc.pyrMeanShiftFiltering(mat,dst,10,50);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(),Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        result.release();
+    }
+
+    //自定义滤波
+    private void customFilter(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+
+        Mat k = new Mat(3,3, CvType.CV_32FC1);
+        //3X3模糊卷积核
+        //float[] data = new float[]{1.0f/9.0f,1.0f/9.0f,1.0f/9.0f,1.0f/9.0f,1.0f/9.0f,1.0f/9.0f
+        //,1.0f/9.0f,1.0f/9.0f,1.0f/9.0f};
+        //不同权重近似高斯卷积模糊核
+         float[] data = new float[]{0,1.0f/8.0f,0,1.0f/8.0f,0.5f,1.0f/8.0f,0,1.0f/8.0f,0};
+        //锐化算子
+        // float[] data = new float[]{0，-1,0，-1,5，-1,0，-1,0};
+        //强化锐化算子八领域
+        // float[] data = new float[]{-1，-1，-1，-1,9，-1，-1，-1，-1};
+        //Robert算子
+        // float[] robert_x = new float[]{-1,0,0,1};
+        // float[] robert_y = new float[]{0,1,-1,0};
+        k.put(0,0,data);
+        Mat dst = new Mat();
+        Imgproc.filter2D(mat,dst,-1,k);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(),Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        result.release();
+    }
+
+    //形态学操作
+    private void morphologyDemo(int option){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat k = Imgproc.getStructuringElement(Imgproc.MORPH_RECT,new Size(15,15)
+        ,new Point(-1,-1));
+        switch (option){
+            case 0://膨胀
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_DILATE,k);
+                break;
+            case 1://腐蚀
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_ERODE,k);
+                break;
+            case 2://开操作
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_OPEN,k);
+                break;
+            case 3://闭操作
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_CLOSE,k);
+                break;
+            case 4://黑帽
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_BLACKHAT,k);
+                break;
+            case 5://顶帽
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_TOPHAT,k);
+                break;
+            case 6://基本梯度
+                Imgproc.morphologyEx(mat,dst,Imgproc.MORPH_GRADIENT,k);
+                break;
+            default:
+                break;
+        }
 
         Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(),Bitmap.Config.ARGB_8888);
         Mat result = new Mat();

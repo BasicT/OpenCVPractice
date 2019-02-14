@@ -61,12 +61,32 @@
         android:text="均值迁移滤波"
         android:layout_below="@id/dilate_btn"
         android:layout_toRightOf="@id/bilateralFilter_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/customFilter_btn"
+        android:text="自定义滤波"
+        android:layout_below="@id/erode_btn"
+        android:layout_toRightOf="@id/pyrMeanShiftFiltering_btn"/>
+    <EditText
+        android:layout_width="50dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/morph_num"
+        android:inputType="number"
+        android:layout_below="@id/bilateralFilter_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/morph_btn"
+        android:text="形态学操作"
+        android:layout_below="@id/pyrMeanShiftFiltering_btn"
+        android:layout_toRightOf="@id/morph_num"/>
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:id="@+id/select_image"
-        android:layout_below="@id/bilateralFilter_btn"/>
+        android:layout_below="@id/morph_num"/>
 
 </RelativeLayout>
