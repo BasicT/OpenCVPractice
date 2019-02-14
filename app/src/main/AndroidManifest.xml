@@ -28,7 +28,8 @@
         <activity android:name=".MattingActivity" />
         <activity android:name=".MatOperationsActivity" />
         <activity android:name=".TwoSectionActivity" />
-        <activity android:name=".ThreeSectionActivity"></activity>
+        <activity android:name=".ThreeSectionActivity" />
+        <activity android:name=".FourSectionActivity"></activity>
     </application>
 
 </manifest>

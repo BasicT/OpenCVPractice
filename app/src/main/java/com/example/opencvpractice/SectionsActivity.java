@@ -50,5 +50,9 @@ public class SectionsActivity extends AppCompatActivity {
             Intent intent = new Intent(this.getApplicationContext(),ThreeSectionActivity.class);
             startActivity(intent);
         }
+        if (command.equals(AppConstants.CHAPTER_4TH_PGM)){
+            Intent intent = new Intent(this.getApplicationContext(),FourSectionActivity.class);
+            startActivity(intent);
+        }
     }
 }
