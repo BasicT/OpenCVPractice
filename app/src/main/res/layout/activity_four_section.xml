@@ -22,12 +22,51 @@
         android:id="@+id/gaussian_blur_btn"
         android:text="高斯模糊"
         android:layout_toRightOf="@id/blur_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/restore_btn"
+        android:text="还原图像"
+        android:layout_toRightOf="@id/gaussian_blur_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/medianBlur_btn"
+        android:text="中值滤波"
+        android:layout_below="@id/take_pic_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/dilate_btn"
+        android:text="膨胀滤波"
+        android:layout_below="@id/blur_btn"
+        android:layout_toRightOf="@id/medianBlur_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/erode_btn"
+        android:text="腐蚀滤波"
+        android:layout_below="@id/gaussian_blur_btn"
+        android:layout_toRightOf="@id/dilate_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/bilateralFilter_btn"
+        android:text="高斯双边滤波"
+        android:layout_below="@id/medianBlur_btn" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/pyrMeanShiftFiltering_btn"
+        android:text="均值迁移滤波"
+        android:layout_below="@id/dilate_btn"
+        android:layout_toRightOf="@id/bilateralFilter_btn"/>
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:id="@+id/select_image"
-        android:layout_below="@id/take_pic_btn"/>
+        android:layout_below="@id/bilateralFilter_btn"/>
 
 </RelativeLayout>
