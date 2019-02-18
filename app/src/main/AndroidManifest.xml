@@ -16,6 +16,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
+        <activity android:name=".FiveSectionActivity"></activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -29,7 +30,7 @@
         <activity android:name=".MatOperationsActivity" />
         <activity android:name=".TwoSectionActivity" />
         <activity android:name=".ThreeSectionActivity" />
-        <activity android:name=".FourSectionActivity"></activity>
+        <activity android:name=".FourSectionActivity" />
     </application>
 
 </manifest>
