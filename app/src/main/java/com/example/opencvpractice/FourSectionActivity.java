@@ -40,7 +40,7 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
     Bitmap bitmap;
     Button takePicBtn,blurBtn,gaussianBlurBtn,medianBlurBtn,dilateBtn,erodeBtn
             ,restoreBtn,bilateralFilterBtn,pyrMeanShiftFilteringBtn,customFilterBtn
-            ,morphBtn;
+            ,morphBtn,thresholdBtn,customThresholdBtn;
     EditText morphNum;
 
 
@@ -71,6 +71,10 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
         morphBtn = findViewById(R.id.morph_btn);
         morphBtn.setOnClickListener(this);
         morphNum = findViewById(R.id.morph_num);
+        thresholdBtn = findViewById(R.id.threshold_btn);
+        thresholdBtn.setOnClickListener(this);
+        customThresholdBtn = findViewById(R.id.custom_threshold_btn);
+        customThresholdBtn.setOnClickListener(this);
     }
 
     @Override
@@ -109,9 +113,14 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
             case R.id.morph_btn:
                 int num = Integer.parseInt(morphNum.getText().toString());
                 morphologyDemo(num);
+                break;
+            case R.id.threshold_btn:
+                threshold();
+                break;
+            case R.id.custom_threshold_btn:
+                customThreshold();
+                break;
         }
-
-
     }
 
     private void pickUpImage(){
@@ -399,5 +408,52 @@ public class FourSectionActivity extends AppCompatActivity implements View.OnCli
         mat.release();
         dst.release();
         result.release();
+    }
+
+    //阈值化
+    private void threshold(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+
+        int t = 127;
+        int maxValue = 255;
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+
+        Mat dst = new Mat();
+        Imgproc.threshold(gray,dst,t,maxValue,Imgproc.THRESH_TOZERO | Imgproc.THRESH_OTSU);
+
+        Bitmap bm = Bitmap.createBitmap(gray.cols(),gray.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(dst,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        gray.release();
+        dst.release();
+    }
+
+    //自定义阈值阈值化
+    private void customThreshold() {
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+
+        int t = 127;
+        int maxValue = 255;
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+
+        Mat dst = new Mat();
+        Imgproc.adaptiveThreshold(gray,dst,maxValue,Imgproc.ADAPTIVE_THRESH_MEAN_C,
+                Imgproc.THRESH_BINARY,15,10);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(dst,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        gray.release();
+        dst.release();
     }
 }

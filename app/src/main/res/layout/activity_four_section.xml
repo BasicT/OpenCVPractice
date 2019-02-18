@@ -81,12 +81,26 @@
         android:text="形态学操作"
         android:layout_below="@id/pyrMeanShiftFiltering_btn"
         android:layout_toRightOf="@id/morph_num"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/threshold_btn"
+        android:text="阈值化"
+        android:layout_below="@id/pyrMeanShiftFiltering_btn"
+        android:layout_toRightOf="@id/morph_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/custom_threshold_btn"
+        android:text="自定义阈值"
+        android:layout_below="@id/pyrMeanShiftFiltering_btn"
+        android:layout_toRightOf="@id/threshold_btn"/>
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:id="@+id/select_image"
-        android:layout_below="@id/morph_num"/>
+        android:layout_below="@id/morph_num" />
 
 </RelativeLayout>
