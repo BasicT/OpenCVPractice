@@ -275,10 +275,10 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
 
     private void cannyXY(){
         Mat gradx = new Mat();
-        Imgproc.Sobel(mat,gradx,CvType.CV_32F,1,0);
+        Imgproc.Sobel(mat,gradx,CvType.CV_16S,1,0);
 
         Mat grady = new Mat();
-        Imgproc.Sobel(mat,grady,CvType.CV_32F,0,1);
+        Imgproc.Sobel(mat,grady,CvType.CV_16S,0,1);
 
         Mat edges = new Mat();
         Imgproc.Canny(gradx,grady,edges,50,150);
