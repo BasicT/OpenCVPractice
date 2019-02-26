@@ -10,12 +10,57 @@
         android:layout_height="wrap_content"
         android:id="@+id/take_pic_btn"
         android:text="选取图像" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/restore_btn"
+        android:text="恢复图像"
+        android:layout_toRightOf="@id/take_pic_btn" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/save_btn"
+        android:text="存储图像"
+        android:layout_toRightOf="@id/restore_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/sobel_btn"
+        android:text="Sobel梯度"
+        android:layout_below="@id/take_pic_btn" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/scharr_btn"
+        android:text="Scharr梯度"
+        android:layout_below="@id/take_pic_btn"
+        android:layout_toRightOf="@id/sobel_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/laplacian_btn"
+        android:text="拉普拉斯"
+        android:layout_below="@id/take_pic_btn"
+        android:layout_toRightOf="@id/scharr_btn" />
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/canny_whole_btn"
+        android:text="Canny整体"
+        android:layout_below="@id/sobel_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/canny_xy_btn"
+        android:text="CannyXY"
+        android:layout_below="@id/sobel_btn"
+        android:layout_toRightOf="@id/canny_whole_btn"/>
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:id="@+id/select_image"
-        android:layout_below="@id/take_pic_btn"/>
+        android:layout_below="@id/canny_whole_btn"/>
 
 </RelativeLayout>
