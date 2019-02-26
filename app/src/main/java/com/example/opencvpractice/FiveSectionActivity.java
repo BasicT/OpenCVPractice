@@ -33,13 +33,11 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     private static final String TAG = FiveSectionActivity.class.getName();
     private Uri fileUri,uri;
     private Bitmap bitmap;
-    private Mat mat,dst;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_five_section);
-        dst = new Mat();
         iniButton();
     }
 
@@ -74,7 +72,6 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 restore();
                 break;
             case R.id.save_image:
-                save(dst);
                 break;
             case R.id.sobel_btn:
                 sobel();
@@ -151,7 +148,6 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
             e.printStackTrace();
             Log.d(TAG,"错误类型为： " + e);
         }
-        mat = Imgcodecs.imread(fileUri.getPath());
         bitmap = ImageSelectUtils.getSuitableBitmap(fileUri.getPath());
 
         ImageView iv = findViewById(R.id.select_image);
@@ -174,6 +170,7 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
             String name = String.valueOf(System.currentTimeMillis() + "_book.jpg");
             File tempFile = new File(fileDir.getAbsoluteFile()+File.separator,name);
             Imgcodecs.imwrite(tempFile.getAbsolutePath(),dst);
+
         }catch (Exception e){
             e.printStackTrace();
             Log.d(TAG,"错误类型为：" + e);
@@ -181,6 +178,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void sobel(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
         Mat gradx = new Mat();
         Imgproc.Sobel(mat,gradx, CvType.CV_32F,1,0);
         Core.convertScaleAbs(gradx,gradx);
@@ -201,6 +200,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         ImageView iv = findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
 
+        mat.release();
+        dst.release();
         result.release();
         gradx.release();
         grady.release();
@@ -208,6 +209,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void scharr(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
         Mat gradx = new Mat();
         Imgproc.Scharr(mat,gradx,CvType.CV_32F,1,0);
         Core.convertScaleAbs(gradx,gradx);
@@ -228,6 +231,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         ImageView iv = findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
 
+        mat.release();
+        dst.release();
         gradx.release();
         grady.release();
         result.release();
@@ -235,6 +240,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void laplacian(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
         Imgproc.Laplacian(mat,dst,CvType.CV_32F,3,1.0,0);
         Core.convertScaleAbs(dst,dst);
 
@@ -246,10 +253,14 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         ImageView iv = findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
 
+        mat.release();
+        dst.release();
         result.release();
     }
 
     private void cannyWhole(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
         Mat edges = new Mat();
 
         Imgproc.GaussianBlur(mat,mat,new Size(3,3),0);
@@ -268,12 +279,16 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         ImageView iv = findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
 
+        mat.release();
+        dst.release();
         edges.release();
         gray.release();
         result.release();
     }
 
     private void cannyXY(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
         Mat gradx = new Mat();
         Imgproc.Sobel(mat,gradx,CvType.CV_16S,1,0);
 
@@ -292,6 +307,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         ImageView iv = findViewById(R.id.select_image);
         iv.setImageBitmap(bm);
 
+        mat.release();
+        dst.release();
         gradx.release();
         grady.release();
         edges.release();
