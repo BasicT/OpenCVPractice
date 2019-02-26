@@ -1,7 +1,6 @@
 package com.example.opencvpractice;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -34,8 +33,6 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     private static final String TAG = FiveSectionActivity.class.getName();
     private Uri fileUri,uri;
     private Bitmap bitmap;
-    private Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
-            ,cannyWholeBtn,cannyXYBtn;
     private Mat mat,dst;
 
     @Override
@@ -47,6 +44,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     }
 
     private void iniButton(){
+        Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
+                ,cannyWholeBtn,cannyXYBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
