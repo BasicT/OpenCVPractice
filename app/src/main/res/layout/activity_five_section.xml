@@ -62,6 +62,13 @@
         android:text="霍夫直线"
         android:layout_below="@id/sobel_btn"
         android:layout_toRightOf="@id/canny_xy_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/houghLinesP_btn"
+        android:text="霍夫直线P"
+        android:layout_below="@id/sobel_btn"
+        android:layout_toRightOf="@id/houghLines_btn"/>
 
     <ImageView
         android:layout_width="match_parent"

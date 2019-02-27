@@ -45,7 +45,7 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
 
     private void iniButton(){
         Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
-                ,cannyWholeBtn,cannyXYBtn,houghLinesBtn;
+                ,cannyWholeBtn,cannyXYBtn,houghLinesBtn,houghLinesPBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
@@ -64,6 +64,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         cannyXYBtn.setOnClickListener(this);
         houghLinesBtn = findViewById(R.id.houghLines_btn);
         houghLinesBtn.setOnClickListener(this);
+        houghLinesPBtn = findViewById(R.id.houghLinesP_btn);
+        houghLinesPBtn.setOnClickListener(this);
     }
 
     @Override
@@ -94,6 +96,9 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.houghLines_btn:
                 houghLines();
+                break;
+            case R.id.houghLinesP_btn:
+                houghLinesP();
                 break;
         }
     }
@@ -347,6 +352,40 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
             pt2.x = Math.round(x0 - 1000*(-b));
             pt2.y = Math.round(y0 - 1000*(a));
             Imgproc.line(out,pt1,pt2,new Scalar(0,0,255),3,Imgproc.LINE_AA,0);
+        }
+        out.copyTo(dst);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        edges.release();
+        lines.release();
+        result.release();
+        out.release();
+    }
+
+    private void houghLinesP(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat edges = new Mat();
+
+        Imgproc.Canny(mat,edges,50,150,3,true);
+
+        Mat lines = new Mat();
+        Imgproc.HoughLinesP(edges,lines,1,Math.PI/180.0,100,50,10);
+        Mat out = Mat.zeros(mat.size(),mat.type());
+        for (int i = 0; i < lines.rows(); i++){
+            int[] oneline = new int[4];
+            lines.get(i,0,oneline);
+            Imgproc.line(out,new Point(oneline[0],oneline[1]),new Point(oneline[2],oneline[3]),
+                    new Scalar(0,0,255),2,8,0);
         }
         out.copyTo(dst);
 
