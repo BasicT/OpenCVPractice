@@ -55,6 +55,13 @@
         android:text="CannyXY"
         android:layout_below="@id/sobel_btn"
         android:layout_toRightOf="@id/canny_whole_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/houghLines_btn"
+        android:text="霍夫直线"
+        android:layout_below="@id/sobel_btn"
+        android:layout_toRightOf="@id/canny_xy_btn"/>
 
     <ImageView
         android:layout_width="match_parent"

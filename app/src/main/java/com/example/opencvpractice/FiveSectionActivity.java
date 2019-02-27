@@ -22,6 +22,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -43,7 +45,7 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
 
     private void iniButton(){
         Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
-                ,cannyWholeBtn,cannyXYBtn;
+                ,cannyWholeBtn,cannyXYBtn,houghLinesBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
@@ -60,6 +62,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         cannyWholeBtn.setOnClickListener(this);
         cannyXYBtn = findViewById(R.id.canny_xy_btn);
         cannyXYBtn.setOnClickListener(this);
+        houghLinesBtn = findViewById(R.id.houghLines_btn);
+        houghLinesBtn.setOnClickListener(this);
     }
 
     @Override
@@ -87,6 +91,9 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.canny_xy_btn:
                 cannyXY();
+                break;
+            case R.id.houghLines_btn:
+                houghLines();
                 break;
         }
     }
@@ -264,11 +271,11 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         Mat edges = new Mat();
 
         Imgproc.GaussianBlur(mat,mat,new Size(3,3),0);
-
+        //求灰度图像，意义不明
         Mat gray = new Mat();
         Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
 
-        Imgproc.Canny(gray,edges,50,150,3,true);
+        Imgproc.Canny(mat,edges,50,150,3,true);
         Core.bitwise_and(mat,mat,dst,edges);
 
         Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
@@ -313,5 +320,49 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         grady.release();
         edges.release();
         result.release();
+    }
+
+    private void houghLines(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+
+        Mat edges = new Mat();
+        Imgproc.Canny(mat,edges,50,150,3,true);
+
+        Mat lines = new Mat();
+        Imgproc.HoughLines(edges,lines,1,Math.PI/180.0,200);
+
+        Mat out = Mat.zeros(mat.size(),mat.type());
+
+        float[] data = new float[2];
+        for (int i = 0; i<lines.rows(); i++){
+            lines.get(i,0,data);
+            float rho = data[0],theta = data[1];
+            double a = Math.cos(theta),b = Math.sin(theta);
+            double x0 = a * rho, y0 = b * rho;
+            Point pt1 = new Point();
+            Point pt2 = new Point();
+            pt1.x = Math.round(x0 + 1000*(-b));
+            pt1.y = Math.round(y0 + 1000*(a));
+            pt2.x = Math.round(x0 - 1000*(-b));
+            pt2.y = Math.round(y0 - 1000*(a));
+            Imgproc.line(out,pt1,pt2,new Scalar(0,0,255),3,Imgproc.LINE_AA,0);
+        }
+        out.copyTo(dst);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        edges.release();
+        lines.release();
+        result.release();
+        out.release();
     }
 }
