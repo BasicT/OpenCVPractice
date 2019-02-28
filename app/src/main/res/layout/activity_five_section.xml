@@ -82,6 +82,13 @@
         android:text="轮廓发现"
         android:layout_below="@id/canny_whole_btn"
         android:layout_toRightOf="@id/houghCircles_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/calchist_btn"
+        android:text="直方图"
+        android:layout_below="@id/canny_whole_btn"
+        android:layout_toRightOf="@id/contours_btn"/>
 
     <ImageView
         android:layout_width="match_parent"

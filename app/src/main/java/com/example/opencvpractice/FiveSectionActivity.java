@@ -22,6 +22,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfFloat;
+import org.opencv.core.MatOfInt;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
@@ -52,7 +54,7 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     private void iniButton(){
         Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
                 ,cannyWholeBtn,cannyXYBtn,houghLinesBtn,houghLinesPBtn,houghCirclesBtn,
-        contourBtn;
+        contourBtn,calchistBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
@@ -77,6 +79,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         houghCirclesBtn.setOnClickListener(this);
         contourBtn = findViewById(R.id.contours_btn);
         contourBtn.setOnClickListener(this);
+        calchistBtn = findViewById(R.id.calchist_btn);
+        calchistBtn.setOnClickListener(this);
     }
 
     @Override
@@ -116,6 +120,9 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.contours_btn:
                 contours();
+                break;
+            case R.id.calchist_btn:
+                calchist();
                 break;
         }
     }
@@ -506,5 +513,55 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         binary.release();
         result.release();
         hierarchy.release();
+    }
+
+    private void calchist(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+
+        List<Mat> images = new ArrayList<Mat>();
+        images.add(gray);
+        Mat mask = Mat.ones(dst.size(),CvType.CV_8UC1);
+        Mat hist = new Mat();
+        Imgproc.calcHist(images,new MatOfInt(0),mask,hist,new MatOfInt(256),new MatOfFloat(0,255));
+        Core.normalize(hist,hist,0,255,Core.NORM_MINMAX);
+        int height = hist.rows();
+
+        dst.create(400,400,mat.type());
+        dst.setTo(new Scalar(200,200,200));
+        int offsetx = 50;
+        int offsety = 350;
+        float[] histdata = new float[256];
+        hist.get(0,0,histdata);
+        Imgproc.line(dst,new Point(offsetx,0),new Point(offsetx,offsety),new Scalar(0,0,0));
+        Imgproc.line(dst,new Point(offsetx,offsety),new Point(400,offsety),new Scalar(0,0,0));
+
+        for (int i = 0; i < height-1;i++){
+            int y1 = (int)histdata[i];
+            int y2 = (int)histdata[i+1];
+            Rect rect = new Rect();
+            rect.x = offsetx + i;
+            rect.y = offsety - y1;
+            rect.width = 1;
+            rect.height = y1;
+            Imgproc.rectangle(dst,rect.tl(),rect.br(),new Scalar(15,15,15));
+        }
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        gray.release();
+        mask.release();
+        hist.release();
+        result.release();
     }
 }
