@@ -22,13 +22,19 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class FiveSectionActivity extends AppCompatActivity implements View.OnClickListener{
 
@@ -45,7 +51,8 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
 
     private void iniButton(){
         Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
-                ,cannyWholeBtn,cannyXYBtn,houghLinesBtn,houghLinesPBtn;
+                ,cannyWholeBtn,cannyXYBtn,houghLinesBtn,houghLinesPBtn,houghCirclesBtn,
+        contourBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
@@ -66,6 +73,10 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         houghLinesBtn.setOnClickListener(this);
         houghLinesPBtn = findViewById(R.id.houghLinesP_btn);
         houghLinesPBtn.setOnClickListener(this);
+        houghCirclesBtn = findViewById(R.id.houghCircles_btn);
+        houghCirclesBtn.setOnClickListener(this);
+        contourBtn = findViewById(R.id.contours_btn);
+        contourBtn.setOnClickListener(this);
     }
 
     @Override
@@ -99,6 +110,12 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.houghLinesP_btn:
                 houghLinesP();
+                break;
+            case R.id.houghCircles_btn:
+                houghCircles();
+                break;
+            case R.id.contours_btn:
+                contours();
                 break;
         }
     }
@@ -403,5 +420,91 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         lines.release();
         result.release();
         out.release();
+    }
+
+    private void houghCircles() {
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+
+        Mat gray = new Mat();
+        Imgproc.pyrMeanShiftFiltering(mat, gray, 15, 80);
+        Imgproc.cvtColor(gray, gray, Imgproc.COLOR_BGR2GRAY);
+
+        Imgproc.GaussianBlur(gray,gray,new Size(3,3),0);
+
+        Mat circles = new Mat();
+        dst.create(mat.size(), mat.type());
+        Imgproc.HoughCircles(gray, circles, Imgproc.HOUGH_GRADIENT, 1, 20, 100, 30,
+                10, 200);
+        for (int i = 0; i < circles.cols(); i++) {
+            float[] info = new float[3];
+            circles.get(0,i,info);
+            Imgproc.circle(dst,new Point((int)info[0],(int)info[1]),(int)info[2],
+                    new Scalar(0,255,0),2,8,0);
+        }
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        gray.release();
+        circles.release();
+        result.release();
+    }
+
+    private void contours(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat gray = new Mat();
+        Mat binary = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.threshold(gray,binary,0,255,Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+
+        List<MatOfPoint> contours = new ArrayList<MatOfPoint>();
+        Mat hierarchy = new Mat();
+        Imgproc.findContours(binary,contours,hierarchy,Imgproc.RETR_TREE,Imgproc.CHAIN_APPROX_SIMPLE,new Point(0,0));
+
+        dst.create(mat.size(),mat.type());
+        for (int i = 0; i < contours.size(); i++){
+            Rect rect = Imgproc.boundingRect(contours.get(i));
+            double w = rect.width;
+            double h = rect.height;
+            double rate = Math.min(w,h)/Math.max(w,h);
+            Log.i("Bound Rect","rate: "+ rate);
+
+            RotatedRect minRect = Imgproc.minAreaRect(new MatOfPoint2f(contours.get(i).toArray()));
+            w = minRect.size.width;
+            h = minRect.size.height;
+            rate = Math.min(w,h)/Math.max(w,h);
+            Log.i("Min Bound Rect","rate: " + rate);
+
+            double area = Imgproc.contourArea(contours.get(i));
+            double arclen = Imgproc.arcLength(new MatOfPoint2f(contours.get(i).toArray()),true);
+            Log.i("ContourArea","area: "+ area);
+            Log.i("arcLength","arclength: "+ arclen);
+
+            Imgproc.drawContours(dst,contours,i,new Scalar(0,0,255),2);
+        }
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        gray.release();
+        binary.release();
+        result.release();
+        hierarchy.release();
     }
 }
