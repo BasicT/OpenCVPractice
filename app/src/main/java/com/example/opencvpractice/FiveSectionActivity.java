@@ -54,7 +54,7 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
     private void iniButton(){
         Button takePicBtn,restoreBtn,saveBtn,sobelBtn,scharrBtn,laplacianBtn
                 ,cannyWholeBtn,cannyXYBtn,houghLinesBtn,houghLinesPBtn,houghCirclesBtn,
-        contourBtn,calchistBtn;
+        contourBtn,calchistBtn,equalizeHistBtn,compareHistogramBtn;
         takePicBtn = findViewById(R.id.take_pic_btn);
         takePicBtn.setOnClickListener(this);
         restoreBtn = findViewById(R.id.restore_btn);
@@ -81,6 +81,10 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         contourBtn.setOnClickListener(this);
         calchistBtn = findViewById(R.id.calchist_btn);
         calchistBtn.setOnClickListener(this);
+        equalizeHistBtn = findViewById(R.id.equalizeHist_btn);
+        equalizeHistBtn.setOnClickListener(this);
+        compareHistogramBtn = findViewById(R.id.compareHistogram_btn);
+        compareHistogramBtn.setOnClickListener(this);
     }
 
     @Override
@@ -123,6 +127,12 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
                 break;
             case R.id.calchist_btn:
                 calchist();
+                break;
+            case R.id.equalizeHist_btn:
+                equalizeHist();
+                break;
+            case R.id.compareHistogram_btn:
+                compareHistogram();
                 break;
         }
     }
@@ -563,5 +573,78 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         mask.release();
         hist.release();
         result.release();
+    }
+
+    private void equalizeHist(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.equalizeHist(gray,dst);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_GRAY2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        gray.release();
+        result.release();
+    }
+
+    private void compareHistogram(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());
+        Mat dst = new Mat();
+        Mat gray = new Mat();
+        Imgproc.cvtColor(mat,gray,Imgproc.COLOR_BGR2GRAY);
+        Imgproc.equalizeHist(gray,dst);
+        Mat mask = Mat.ones(mat.size(),CvType.CV_8UC1);
+
+        List<Mat> images = new ArrayList<Mat>();
+        images.add(gray);
+
+        Mat hist1 = new Mat();
+        Imgproc.calcHist(images,new MatOfInt(0),mask,hist1,
+                new MatOfInt(256),new MatOfFloat(0,255));
+        Core.normalize(hist1,hist1,0,255,Core.NORM_MINMAX);
+
+        images.clear();
+        images.add(dst);
+        Mat hist2 = new Mat();
+        Imgproc.calcHist(images,new MatOfInt(0),mask,hist2,
+                new MatOfInt(256),new MatOfFloat(0,255));
+        Core.normalize(hist2,hist2,0,255,Core.NORM_MINMAX);
+
+        double[] histdata = new double[7];
+        histdata[0] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_CORREL);
+        histdata[1] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_CHISQR);
+        histdata[2] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_INTERSECT);
+        histdata[3] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_BHATTACHARYYA);
+        histdata[4] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_CHISQR_ALT);
+        histdata[5] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_KL_DIV);
+        histdata[6] = Imgproc.compareHist(hist1,hist2,Imgproc.HISTCMP_HELLINGER);
+        for (int i = 0; i < histdata.length; i++){
+            Log.i("Hist distance","Distance Type :" + i +"d(H1,H2)=" + histdata[i]);
+        }
+        mat.copyTo(dst);
+
+        Bitmap bm = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat result = new Mat();
+        Imgproc.cvtColor(dst,result,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(result,bm);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bm);
+
+        mat.release();
+        dst.release();
+        gray.release();
+        result.release();
+        hist1.release();
+        hist2.release();
     }
 }

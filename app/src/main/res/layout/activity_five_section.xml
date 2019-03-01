@@ -89,12 +89,25 @@
         android:text="直方图"
         android:layout_below="@id/canny_whole_btn"
         android:layout_toRightOf="@id/contours_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/equalizeHist_btn"
+        android:text="直方图均衡"
+        android:layout_below="@id/canny_whole_btn"
+        android:layout_toRightOf="@id/calchist_btn"/>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/compareHistogram_btn"
+        android:text="直方图比较"
+        android:layout_below="@id/houghCircles_btn"/>
 
     <ImageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_centerInParent="true"
         android:id="@+id/select_image"
-        android:layout_below="@id/houghCircles_btn"/>
+        android:layout_below="@id/compareHistogram_btn"/>
 
 </RelativeLayout>
