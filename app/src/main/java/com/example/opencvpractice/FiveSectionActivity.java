@@ -647,4 +647,45 @@ public class FiveSectionActivity extends AppCompatActivity implements View.OnCli
         hist1.release();
         hist2.release();
     }
+
+    //特征匹配，示范代码，缺少输入输出图像
+    private void matchTemple(){
+        Mat mat = Imgcodecs.imread(fileUri.getPath());//原图像
+        Mat dst = new Mat();
+        Mat temp = new Mat();//特征图像，此处未加载
+        int height = mat.rows() - temp.rows() + 1;
+        int width = mat.cols() - temp.cols() + 1;
+        Mat result = new Mat(height,width,CvType.CV_32FC1);
+
+        int method = Imgproc.TM_CCOEFF_NORMED;
+        Imgproc.matchTemplate(mat,temp,result,method);
+        Core.MinMaxLocResult minMaxResult = Core.minMaxLoc(result);
+        Point minLoc = minMaxResult.minLoc;
+        Point maxLoc = minMaxResult.maxLoc;
+        Point matchLoc = null;
+        //TM_SQDIFF and TM_SQDIFF_NORMED是取最小值，其余4个方法取最大值
+        if (method == Imgproc.TM_SQDIFF || method == Imgproc.TM_SQDIFF_NORMED){
+            matchLoc = minLoc;
+        }else {
+            matchLoc = maxLoc;
+        }
+
+        mat.copyTo(dst);
+        Imgproc.rectangle(dst,matchLoc,new Point(matchLoc.x + temp.cols(),matchLoc.y + temp.rows())
+        ,new Scalar(0,0,255),2,8,0);
+
+        Bitmap bmp = Bitmap.createBitmap(dst.cols(),dst.rows(), Bitmap.Config.ARGB_8888);
+        Mat resultFinal = new Mat();
+        Imgproc.cvtColor(dst,resultFinal,Imgproc.COLOR_BGR2RGBA);
+        Utils.matToBitmap(resultFinal,bmp);
+
+        ImageView iv = findViewById(R.id.select_image);
+        iv.setImageBitmap(bmp);
+
+        mat.release();
+        dst.release();
+        temp.release();
+        result.release();
+        resultFinal.release();
+    }
 }
