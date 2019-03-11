@@ -14,6 +14,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
+import com.example.opencvpractice.ImageSelectUtils;
+
 public class MyCropView extends View {
 
     // Private Constants ///////////////////////////////////////////////////////
@@ -170,7 +172,7 @@ public class MyCropView extends View {
 
     private void setBmp() {
 
-        mBmpToCrop = BitmapFactory.decodeFile(mBmpPath);
+        mBmpToCrop = ImageSelectUtils.getSuitableBitmap(mBmpPath);
 
         mBmpBound = new RectF();
         mBmpBound.left = BMP_LEFT;

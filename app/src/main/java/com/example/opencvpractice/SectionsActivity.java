@@ -11,6 +11,7 @@ import com.example.opencvpractice.datamodel.AppConstants;
 import com.example.opencvpractice.datamodel.ChapterUtils;
 import com.example.opencvpractice.datamodel.ItemDto;
 import com.example.opencvpractice.datamodel.SectionsListViewAdaptor;
+import com.example.opencvpractice.extra.MyCropView;
 
 public class SectionsActivity extends AppCompatActivity {
 
@@ -56,6 +57,10 @@ public class SectionsActivity extends AppCompatActivity {
         }
         if (command.equals(AppConstants.CHAPTER_5TH_PGM)){
             Intent intent = new Intent(this.getApplicationContext(),FiveSectionActivity.class);
+            startActivity(intent);
+        }
+        if (command.equals(AppConstants.CHAPTER_6TH_PGM)){
+            Intent intent = new Intent(this.getApplicationContext(), CropActivity.class);
             startActivity(intent);
         }
     }
